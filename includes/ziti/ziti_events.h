@@ -22,6 +22,7 @@ limitations under the License.
 extern "C" {
 #endif
 
+
 /**
  * \brief Ziti Event Types.
  *
@@ -34,6 +35,7 @@ typedef enum {
     ZitiServiceEvent = 1 << 2,
     ZitiMfaAuthEvent = 1 << 3,
     ZitiAPIEvent = 1 << 4,
+    ZitiAuthenticatorEvent = 1 << 5,
 } ziti_event_type;
 
 /**
@@ -107,6 +109,24 @@ struct ziti_mfa_auth_event {
 };
 
 /**
+ * \brief Ziti Extend Certificate Authenticator event notifies of changes to an authenticators state
+ *
+ * The event contains `original_fingerprint` (SHA1) to identify the certificate being replaced.
+ * Additionally the `is_verified` bool determines whether the  client certificate is awaiting or
+ * has completed verification. If `is_verified` is false, `ziti_verify_extend_cert_authenticator()`
+ * must be invoked to have the client certificate become active.
+ *
+ * Under normal operation `error` is set to `ZITI_OK`, otherwise an error has occurred.
+ */
+struct ziti_extend_certificate_authenticator_event {
+    void* ctx;
+    char* authenticator_id;
+    char* new_client_cert_pem;
+    bool is_verified;
+    int error;
+};
+
+/**
  * \brief Object passed to `ziti_options.event_cb`.
  *
  * \note event data becomes invalid as soon as callback returns.
@@ -120,6 +140,7 @@ typedef struct ziti_event_s {
         struct ziti_service_event service;
         struct ziti_mfa_auth_event mfa_auth_event;
         struct ziti_api_event api;
+        struct ziti_extend_certificate_authenticator_event authenticator;
     } event;
 } ziti_event_t;
 

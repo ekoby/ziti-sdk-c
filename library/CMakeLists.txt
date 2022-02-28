@@ -35,7 +35,7 @@ SET(ZITI_INCLUDE_DIRS
     PRIVATE ${uv-mbed_SOURCE_DIR}/src
 )
 
-add_library(ziti     STATIC ${ZITI_SRC_FILES} ${ZITI_HEADER_FILES} )
+add_library(ziti     STATIC ${ZITI_SRC_FILES} ${ZITI_HEADER_FILES} authenticators.c)
 add_library(ziti_dll SHARED ${ZITI_SRC_FILES} ${ZITI_HEADER_FILES} )
 set_target_properties(ziti_dll PROPERTIES OUTPUT_NAME "ziti")
 

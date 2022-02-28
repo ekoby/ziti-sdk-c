@@ -30,6 +30,7 @@ limitations under the License.
 #include "metrics.h"
 #include "edge_protocol.h"
 #include "posture.h"
+#include "authenticators.h"
 
 #include <sodium.h>
 

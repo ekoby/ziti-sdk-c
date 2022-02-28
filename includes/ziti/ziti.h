@@ -158,7 +158,8 @@ typedef void (*ziti_pq_domain_cb)(ziti_context ztx, const char *id, ziti_pr_doma
  *
  * @see ziti_pq_os_cb()
  */
-typedef void (*ziti_pr_os_cb)(ziti_context ztx, const char *id, const char *os_type, const char *os_version, const char *os_build);
+typedef void (*ziti_pr_os_cb)(ziti_context ztx, const char *id, const char *os_type, const char *os_version,
+                              const char *os_build);
 
 /**
  *  @brief Posture Query for OS callback
@@ -189,7 +190,8 @@ typedef void (*ziti_pq_os_cb)(ziti_context ztx, const char *id, ziti_pr_os_cb re
  *
  *  @see ziti_pq_process_cb()
  */
-typedef void(*ziti_pr_process_cb)(ziti_context ztx, const char *id, const char *path, bool is_running, const char *sha_512_hash,
+typedef void(*ziti_pr_process_cb)(ziti_context ztx, const char *id, const char *path, bool is_running,
+                                  const char *sha_512_hash,
                                   char **signers, int num_signers);
 
 /**
@@ -801,7 +803,6 @@ ZITI_FUNC
 extern int ziti_write(ziti_connection conn, uint8_t *data, size_t length, ziti_write_cb write_cb, void *write_ctx);
 
 
-
 /**
  * @brief Callback called after ziti_mfa_enroll()
  *
@@ -961,6 +962,54 @@ extern void ziti_mfa_auth(ziti_context ztx, const char *code, ziti_mfa_cb auth_c
 ZITI_FUNC
 extern void ziti_endpoint_state_change(ziti_context ztx, bool woken, bool unlocked);
 
+
+/**
+ * @brief Attempts extend the lifetime of a 1st party client certificate (issued by the Ziti Controller)
+ *
+ * Attempts to extend the current authenticator used for the ztx's authentication. If it is not a certificate
+ * authenticator or it is not extendable, errors will be returned in subsequent events.
+ *
+ * Responses are provided via `ziti_extend_certificate_authenticator_event` events. On that event
+ * check the `error` field for issues. If there are no errors persist the `new_client_cert_pem` field
+ * and make a subsequent call to `ziti_verify_extend_cert_authenticator` to enable the new client certificate.
+ *
+ * @param ztx the handle to the Ziti Edge identity context needed for other Ziti C SDK functions
+ * @param csr a CSR representing the request for a new client certificate
+ * @param ctx additional context to be passed back in raised events
+ */
+ZITI_FUNC
+extern void ziti_extend_cert_authenticator(ziti_context ztx, char *csr_pem, void *ctx);
+
+
+/**
+ * @brief Called in response to a ziti_extend_certificate_authenticator_event to verify a new client certificate
+ *
+ * After calling `ziti_extend_cert_authenticator()` a `ziti_extend_certificate_authenticator_event` event is raised
+ * with the `is_verified` flag as false. In order to have the new client cert provided in the event become active,
+ * the controller requires that the client verify that it has received the new certificate. Calling this function
+ * will cause the new client certificate to become active, inactivating the old certificate, and raises a subsequent
+ * `ziti_extend_certificate_authenticator_event` with `is_verified` as true or errors set in the `error` field.
+ *
+ * `ziti_set_client_cert` should be called shortly after on success.
+ *
+ * @param ztx the handle to the Ziti Edge identity context needed for other Ziti C SDK functions
+ * @param new_cert the new client certificate that will become active on successful verification, provided in the extension event
+ * @param ctx additional context to be passed back in raised events
+ */
+ZITI_FUNC
+extern void ziti_verify_extend_cert_authenticator(ziti_context ztx, char *new_cert, void *ctx);
+
+/**
+ * @brief Updates the certificate context for the ZTX with a new client certificate and key.
+ *
+ * @param ztx the handle to the Ziti Edge identity context needed for other Ziti C SDK functions
+ * @param cert_buf a x509 certificate
+ * @param cert_len the length of cert_buf
+ * @param key_buf a private key
+ * @param key_len the length of key_buf
+ */
+ZITI_FUNC
+extern void ziti_set_client_cert(ziti_context ztx, const char *cert_buf, size_t cert_len, const char *key_buf, size_t key_len);
 
 #ifdef __cplusplus
 }

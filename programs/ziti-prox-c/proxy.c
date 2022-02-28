@@ -452,6 +452,8 @@ static void service_check_cb(ziti_context ztx, ziti_service *service, int status
     }
 }
 
+static void authenticator_event_handler(ziti_context ztx, const ziti_event_t *event);
+
 static void on_ziti_event(ziti_context ztx, const ziti_event_t *event) {
     struct proxy_app_ctx *app_ctx = ziti_app_ctx(ztx);
     switch (event->type) {
@@ -524,10 +526,15 @@ static void on_ziti_event(ziti_context ztx, const ziti_event_t *event) {
             break;
         case ZitiMfaAuthEvent:
             mfa_auth_event_handler(ztx);
-
+        case ZitiAuthenticatorEvent:
+            authenticator_event_handler(ztx, event);
         default:
             break;
     }
+}
+
+static void authenticator_event_handler(ziti_context ztx, const ziti_event_t *event) {
+    ZITI_LOG(INFO, "here");
 }
 
 char *pxoxystrndup(const char *s, int n);

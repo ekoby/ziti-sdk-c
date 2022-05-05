@@ -1,18 +1,16 @@
-/*
-Copyright (c) 2022 NetFoundry, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-https://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// Copyright (c) 2022.  NetFoundry, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "zt_internal.h"
 #include "utils.h"
@@ -27,6 +25,7 @@ struct fd_bridge_s {
 };
 
 struct ziti_bridge_s {
+    bool closed;
     ziti_connection conn;
     uv_stream_t *input;
     uv_stream_t *output;
@@ -118,14 +117,20 @@ extern int ziti_conn_bridge_fds(ziti_connection conn, uv_os_fd_t input, uv_os_fd
 
 static void on_ziti_close(ziti_connection conn) {
     struct ziti_bridge_s *br = ziti_conn_data(conn);
-
-    uv_handle_set_data((uv_handle_t *) br->input, br->data);
-    br->close_cb((uv_handle_t *) br->input);
     free(br);
 }
 
 static void close_bridge(struct ziti_bridge_s *br) {
-    // if (br)
+    if (br == NULL || br->closed) { return; }
+
+    br->closed = true;
+
+    if (br->input) {
+        uv_handle_set_data((uv_handle_t *) br->input, br->data);
+        br->close_cb((uv_handle_t *) br->input);
+        br->input = NULL;
+    }
+
     ziti_close(br->conn, on_ziti_close);
 }
 

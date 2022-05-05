@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 Netfoundry, Inc.
+Copyright (c) 2020 NetFoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 #ifndef ZITI_SDK_ZITI_MODEL_H
 #define ZITI_SDK_ZITI_MODEL_H
 
 #include "model_support.h"
+
+#if _WIN32
+#include <winsock2.h>
+#include <in6addr.h>
+#else
+#include <netinet/in.h>
+#endif
 
 #define ZITI_SESSION_TYPE_ENUM(XX, ...) \
 XX(Bind, __VA_ARGS__)                   \
@@ -90,16 +96,18 @@ XX(posture_query_map, ziti_posture_query_set, map, posturePolicies, __VA_ARGS__)
 XX(updated_at,string, none, updatedAt, __VA_ARGS__)
 
 #define ZITI_CLIENT_CFG_V1_MODEL(XX, ...) \
-XX(hostname, string, none, hostname, __VA_ARGS__) \
+XX(hostname, ziti_address, none, hostname, __VA_ARGS__) \
 XX(port, int, none, port, __VA_ARGS__)
 
 #define ZITI_PORT_RANGE_MODEL(XX, ...) \
 XX(low, int, none, low, __VA_ARGS__) \
 XX(high, int, none, high, __VA_ARGS__)
 
+#define ZITI_INTERCEPT_CFG_V1 "intercept.v1"
+
 #define ZITI_INTERCEPT_CFG_V1_MODEL(XX, ...) \
 XX(protocols, string, array, protocols, __VA_ARGS__) \
-XX(addresses, string, array, addresses, __VA_ARGS__) \
+XX(addresses, ziti_address, array, addresses, __VA_ARGS__) \
 XX(port_ranges, ziti_port_range, array, portRanges, __VA_ARGS__) \
 XX(dial_options, tag, map, dialOptions, __VA_ARGS__) \
 XX(source_ip, string, none, sourceIp, __VA_ARGS__)
@@ -115,11 +123,11 @@ XX(forward_protocol, bool, none, forwardProtocol, __VA_ARGS__) \
 XX(allowed_protocols, string, array, allowedProtocols, __VA_ARGS__) \
 XX(address, string, none, address, __VA_ARGS__) \
 XX(forward_address, bool, none, forwardAddress, __VA_ARGS__) \
-XX(allowed_addresses, string, array, allowedAddresses, __VA_ARGS__) \
+XX(allowed_addresses, ziti_address, array, allowedAddresses, __VA_ARGS__) \
 XX(port, int, none, port, __VA_ARGS__) \
 XX(forward_port, bool, none, forwardPort, __VA_ARGS__) \
 XX(allowed_port_ranges, ziti_port_range, array, allowedPortRanges, __VA_ARGS__) \
-XX(allowed_source_addresses, string, array, allowedSourceAddresses, __VA_ARGS__) \
+XX(allowed_source_addresses, ziti_address, array, allowedSourceAddresses, __VA_ARGS__) \
 XX(listen_options, tag, map, listenOptions, __VA_ARGS__)
 
 #define ZITI_MFA_ENROLLMENT_MODEL(XX, ...) \
@@ -131,11 +139,41 @@ XX(provisioning_url, string, none, provisioningUrl, __VA_ARGS__)
 extern "C" {
 #endif
 
+enum ziti_address_type {
+    ziti_address_hostname,
+    ziti_address_cidr
+};
+
+typedef struct ziti_address_s {
+    enum ziti_address_type type;
+    union {
+        struct {
+            char af;
+            unsigned int bits;
+            struct in6_addr ip;
+        } cidr;
+        char hostname[256];
+    } addr;
+} ziti_address;
+
+
+
+
 // make sure ziti model functions are properly exported
 #ifdef MODEL_API
 #undef MODEL_API
 #endif
 #define MODEL_API ZITI_FUNC
+
+ZITI_FUNC int ziti_address_print(char *buf, size_t max, const ziti_address *address);
+
+ZITI_FUNC bool ziti_address_match(ziti_address *addr, ziti_address *range);
+
+ZITI_FUNC bool ziti_address_match_s(const char *addr, ziti_address *range);
+
+ZITI_FUNC bool ziti_address_match_array(const char *addr, ziti_address **range);
+
+DECLARE_MODEL_FUNCS(ziti_address)
 
 DECLARE_ENUM(ziti_session_type, ZITI_SESSION_TYPE_ENUM)
 
@@ -177,6 +215,8 @@ ZITI_FUNC const char *ziti_service_get_raw_config(ziti_service *service, const c
 
 ZITI_FUNC int ziti_service_get_config(ziti_service *service, const char *cfg_type, void *cfg,
                                       int (*parse_func)(void *, const char *, size_t));
+
+ZITI_FUNC int ziti_intercept_from_client_cfg(ziti_intercept_cfg_v1 *intercept, const ziti_client_cfg_v1 *client_cfg);
 
 #ifdef __cplusplus
 }

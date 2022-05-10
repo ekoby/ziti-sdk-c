@@ -42,7 +42,6 @@ jobs:
         with:
           fetch-depth: 0
       - run: |
-          set -x
           echo "BUILD_NUMBER = ${BUILD_NUMBER}"
           cmake -E make_directory ${{ runner.workspace }}/build
 #      - name: cache dependencies
@@ -57,7 +56,7 @@ jobs:
         env:
           TOOLCHAIN: ${{ matrix.spec.toolchain && format('{0}/toolchains/{1}.cmake', github.workspace, matrix.spec.toolchain) || '' }}
         run: |
-          set -x
+          echo   cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
           cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
           cmake --build ${{runner.workspace}}/build
 

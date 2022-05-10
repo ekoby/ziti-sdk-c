@@ -17,7 +17,7 @@ jobs:
       matrix:
         spec:
         - { name: 'Linux x86_64', runner: 'ubuntu-18.04', upload: true }
-        - { name: 'Linux ARM', runner: 'ubuntu-18.04', upload: true, toolchain: 'Linux-arm' }
+        - { name: 'Linux ARM', runner: 'ubuntu-18.04', upload: true, toolchain: 'Linux-arm', no_tests: 'true' }
         - { name: 'MacOS x86_64', runner: 'macOS-10.15', upload: true}
         - { name: 'Windows x86_64', runner: 'windows-2019', upload: true}
 #        os:
@@ -60,6 +60,7 @@ jobs:
           cmake --build ${{runner.workspace}}/build
 
       - name: test
+        if: matrix.spec.no_tests != 'true'
         working-directory: ${{runner.workspace}}/build
         run: ctest -VV --no-compress-output
 

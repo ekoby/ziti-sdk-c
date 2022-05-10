@@ -16,10 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         spec:
-        - { name: 'Linux x86_64', runner: 'ubuntu-18.04', upload: true }
-        - { name: 'Linux ARM', runner: 'ubuntu-18.04', upload: true, toolchain: 'Linux-arm', no_tests: 'true' }
-        - { name: 'MacOS x86_64', runner: 'macOS-10.15', upload: true}
-        - { name: 'Windows x86_64', runner: 'windows-latest', upload: true}
+        - { name: 'Linux x86_64', runner: 'ubuntu-18.04' }
+        - { name: 'Linux ARM', runner: 'ubuntu-18.04', toolchain: 'Linux-arm', no_tests: 'true' }
+        - { name: 'MacOS x86_64', runner: 'macOS-10.15' }
+        - { name: 'MacOS arm64', runner: 'macOS-11', toolchain:  'macOS-arm64', no_tests: 'true' }
+        - { name: 'Windows x86_64', runner: 'windows-latest' }
 #        os:
 #          - ubuntu-18.04
 #          - macOS-10.15
@@ -68,19 +69,12 @@ jobs:
       - name: make artifacts
         run: cmake --build ${{runner.workspace}}/build --target ziti-prox-c --target package
 
-#      - name: zip artifacts
-#        if: runner.os != 'Windows'
-#        run: 7z a -tzip ziti-prox-c-${{ runner.os }}.zip ${{runner.workspace}}/build/programs/ziti-prox-c/ziti-prox-c
-#      - name: zip artifacts (WIN)
-#        if: runner.os == 'Windows' && matrix.upload != 'false'
-#        run: 7z a -tzip ziti-prox-c-${{ runner.os }}.zip ${{runner.workspace}}/build/programs/ziti-prox-c/Debug/ziti-prox-c.exe
-
       - name: upload artifacts
         if: matrix.spec.upload != 'false'
         uses: actions/upload-artifact@v3
         with:
           name: ziti-prox-c-${{ matrix.spec.toolchain || runner.os }}
-          path: ${{ runner.workspace }}/build/programs/ziti-prox-c/ziti-prox-c${{ runner.os == 'Windows' && 'exe' || '' }}
+          path: ${{ runner.workspace }}/build/programs/ziti-prox-c/ziti-prox-c${{ runner.os == 'Windows' && '.exe' || '' }}
       - name: upload SDK artifacts
         if: matrix.upload != 'false'
         uses: actions/upload-artifact@v3

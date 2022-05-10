@@ -19,7 +19,7 @@ jobs:
         - { name: 'Linux x86_64', runner: 'ubuntu-18.04', upload: true }
         - { name: 'Linux ARM', runner: 'ubuntu-18.04', upload: true, toolchain: 'Linux-arm', no_tests: 'true' }
         - { name: 'MacOS x86_64', runner: 'macOS-10.15', upload: true}
-        - { name: 'Windows x86_64', runner: 'windows-2019', upload: true}
+        - { name: 'Windows x86_64', runner: 'windows-latest', upload: true}
 #        os:
 #          - ubuntu-18.04
 #          - macOS-10.15
@@ -80,11 +80,11 @@ jobs:
         if: matrix.spec.upload != 'false'
         uses: actions/upload-artifact@v3
         with:
-          name: ziti-prox-c-${{ runner.os }}
+          name: ziti-prox-c-${{ matrix.spec.toolchain || runner.os }}
           path: ${{ runner.workspace }}/build/programs/ziti-prox-c/ziti-prox-c${{ runner.os == 'Windows' && 'exe' || '' }}
       - name: upload SDK artifacts
         if: matrix.upload != 'false'
         uses: actions/upload-artifact@v3
         with:
-          name: ziti-sdk-${{ runner.os }}
+          name: ziti-sdk-${{ matrix.spec.toolchain || runner.os }}
           path: ${{ runner.workspace }}/build/package/ziti-sdk-*

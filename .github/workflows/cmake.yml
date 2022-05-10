@@ -20,17 +20,7 @@ jobs:
         - { name: 'Linux ARM', runner: 'ubuntu-18.04', toolchain: 'Linux-arm', no_tests: 'true' }
         - { name: 'MacOS x86_64', runner: 'macOS-10.15' }
         - { name: 'MacOS arm64', runner: 'macOS-11', toolchain:  'macOS-arm64', no_tests: 'true' }
-        - { name: 'Windows x86_64', runner: 'windows-latest' }
-#        os:
-#          - ubuntu-18.04
-#          - macOS-10.15
-#          - windows-latest
-#        opts: [""]
-#
-#        include:
-#          - os: windows-latest
-#            opts: -G "CodeBlocks - MinGW Makefiles"
-#            upload: "false"
+        - { name: 'Windows x86_64', runner: 'windows-2019' }
 
     steps:
       - name: Install Crossbuild tools
@@ -45,13 +35,6 @@ jobs:
       - run: |
           echo "BUILD_NUMBER = ${BUILD_NUMBER}"
           cmake -E make_directory ${{ runner.workspace }}/build
-#      - name: cache dependencies
-#        uses: actions/cache@v2
-#        env:
-#          cache-name: sdk-dependencies
-#        with:
-#          path: ${{runner.workspace}}/build/_deps
-#          key: ${{ runner.os }}-${{matrix.opts}}-build-${{ env.cache-name }}-${{ hashFiles('deps/*') }}
 
       - name: setup/build CMake
         env:

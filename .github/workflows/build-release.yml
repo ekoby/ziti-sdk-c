@@ -11,6 +11,7 @@ jobs:
     env:
       BUILD_NUMBER: ${{ github.run_number }}
     strategy:
+      fail-fast: false
       matrix:
         spec:
         - { name: 'Linux x86_64', runner: 'ubuntu-18.04' }
@@ -36,7 +37,7 @@ jobs:
         run: |
           echo "build number = ${BUILD_NUMBER}"
           cmake -E make_directory ${{runner.workspace}}/build
-          cmake -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} -S ${{ github.workspace }} -B ${{runner.workspace}}/build
+          cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
           cmake --build ${{runner.workspace}}/build
 
       - name: make artifacts

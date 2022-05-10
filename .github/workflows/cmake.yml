@@ -32,6 +32,12 @@ jobs:
 #            upload: "false"
 
     steps:
+      - name: Install Crossbuild tools
+        if: ${{ matrix.spec.runner == 'ubuntu-18.04 }}
+        run: |
+          apt update
+          apt install -y crossbuild-essential-armhf crossbuild-essential-arm64
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0

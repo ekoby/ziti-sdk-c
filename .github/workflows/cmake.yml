@@ -46,7 +46,7 @@ jobs:
       - name: setup/build CMake on ${{ matrix.spec.win_sdk }}
         if: matrix.spec.win_sdk != ''
         run: |
-          cmake -S ${{ github.workspace }} -B ${{runner.workspace}}/build
+          cmake -G "NMake Makefiles" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
           cmake --build ${{runner.workspace}}/build 
 
       - name: setup/build CMake

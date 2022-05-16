@@ -45,14 +45,12 @@ jobs:
 
       - name: setup/build CMake on ${{ matrix.spec.win_sdk }}
         if: matrix.spec.win_sdk != ''
-        env:
-          TOOLCHAIN: ${{ matrix.spec.toolchain && format('{0}/toolchains/{1}.cmake', github.workspace, matrix.spec.toolchain) || '' }}
         run: |
-          echo   cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
-          cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
-          cmake --build ${{runner.workspace}}/build
+          cmake -S ${{ github.workspace }} -B ${{runner.workspace}}/build
+          cmake --build ${{runner.workspace}}/build 
 
       - name: setup/build CMake
+        if: matrix.spec.win_sdk == ''
         env:
           TOOLCHAIN: ${{ matrix.spec.toolchain && format('{0}/toolchains/{1}.cmake', github.workspace, matrix.spec.toolchain) || '' }}
         run: |

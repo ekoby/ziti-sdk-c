@@ -16,12 +16,12 @@ jobs:
       fail-fast: false
       matrix:
         spec:
-        - { name: 'Linux x86_64', runner: 'ubuntu-18.04' }
-        - { name: 'Linux ARM', runner: 'ubuntu-18.04', toolchain: 'Linux-arm', no_tests: 'true' }
-        - { name: 'MacOS x86_64', runner: 'macOS-10.15' }
-        - { name: 'MacOS arm64', runner: 'macOS-11', toolchain:  'macOS-arm64', no_tests: 'true' }
-        - { name: 'Windows x86_64', runner: 'windows-2019' }
-        - { name: 'Windows arm64', runner: 'windows-2019', win_sdk: 'amd64_arm64' }
+#        - { name: 'Linux x86_64', runner: 'ubuntu-18.04' }
+#        - { name: 'Linux ARM', runner: 'ubuntu-18.04', toolchain: 'Linux-arm', no_tests: 'true' }
+#        - { name: 'MacOS x86_64', runner: 'macOS-10.15' }
+#        - { name: 'MacOS arm64', runner: 'macOS-11', toolchain:  'macOS-arm64', no_tests: 'true' }
+#        - { name: 'Windows x86_64', runner: 'windows-2019' }
+        - { name: 'Windows arm64', runner: 'windows-2019', win_sdk: 'amd64_arm64', no_tests: 'true' }
 
     steps:
       - name: Install Crossbuild tools
@@ -42,6 +42,15 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.spec.win_sdk }}
+
+      - name: setup/build CMake on ${{ matrix.spec.win_sdk }}
+        if: matrix.spec.win_sdk != ''
+        env:
+          TOOLCHAIN: ${{ matrix.spec.toolchain && format('{0}/toolchains/{1}.cmake', github.workspace, matrix.spec.toolchain) || '' }}
+        run: |
+          echo   cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
+          cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" -S ${{ github.workspace }} -B ${{runner.workspace}}/build
+          cmake --build ${{runner.workspace}}/build
 
       - name: setup/build CMake
         env:

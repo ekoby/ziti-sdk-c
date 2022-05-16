@@ -21,6 +21,7 @@ jobs:
         - { name: 'MacOS x86_64', runner: 'macOS-10.15' }
         - { name: 'MacOS arm64', runner: 'macOS-11', toolchain:  'macOS-arm64', no_tests: 'true' }
         - { name: 'Windows x86_64', runner: 'windows-2019' }
+        - { name: 'Windows arm64', runner: 'windows-2019', win_sdk: 'amd64_arm64' }
 
     steps:
       - name: Install Crossbuild tools
@@ -35,6 +36,12 @@ jobs:
       - run: |
           echo "BUILD_NUMBER = ${BUILD_NUMBER}"
           cmake -E make_directory ${{ runner.workspace }}/build
+
+      - name: setup Win SDK
+        if: matrix.spec.win_sdk != ''
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.spec.win_sdk }}
 
       - name: setup/build CMake
         env:
